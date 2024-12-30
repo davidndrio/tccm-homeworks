@@ -4,6 +4,7 @@ program main
     ! Declarations
     integer :: Natoms
     double precision, allocatable :: coord(:,:), mass(:), distance(:,:)
+    double precision :: epsilon, sigma, total_potential_energy
     character(len=100) :: input_file
     integer :: i_stat, i
     integer :: read_Natoms
@@ -34,7 +35,7 @@ program main
     do i = 1, Natoms
         write(*,*) distance(i, :)
     end do
-
+    
     ! Free allocated memory
     deallocate(coord, mass, distance)
 end program main
