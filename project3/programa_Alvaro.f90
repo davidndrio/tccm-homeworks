@@ -3,7 +3,7 @@ program main
 
     ! Declarations
     integer :: Natoms
-    double precision, allocatable :: coord(:,:), mass(:), distance(:,:), velocity(:,:)
+    double precision, allocatable :: coord(:,:), mass(:), distance(:,:), velocity(:,:), acceleration(:,:)
     double precision :: epsilon, sigma, total_potential_energy, kinetic_energy, total_energy
     character(len=100) :: input_file
     integer :: i_stat, i
@@ -34,7 +34,7 @@ program main
     Natoms = read_Natoms(input_file)
     write(*,*) "Number of atoms:", Natoms
     
-    allocate(coord(Natoms, 3), mass(Natoms), distance(Natoms, Natoms), velocity(Natoms, 3), stat=i_stat)
+    allocate(coord(Natoms, 3), mass(Natoms), distance(Natoms, Natoms), velocity(Natoms, 3), acceleration(Natoms, 3), stat=i_stat)
         if (i_stat /= 0) then
                 print *, "Error: Memory allocation failed."
                 stop
@@ -60,11 +60,17 @@ program main
     ! Compute total energy (sum of kinetic and potential)
     total_energy = kinetic_energy + total_potential_energy
 
+    ! Compute acceleration for each atom
+    call compute_acc(Natoms, coord, mass, distance, acceleration, epsilon, sigma)
+
     ! Print energies
     write(*,*) "The Total Potential Energy of the Ensemble is:", total_potential_energy, "J"
     write(*,*) "The Kinetic Energy of the Ensemble is:", kinetic_energy, "J"
     write(*,*) "The Total Energy of the Ensemble is:", total_energy, "J"
+    
+    ! Example: Print acceleration for the first atom as a check
+    write(*,*) "Acceleration for atom 1:", acceleration(1,:)
 
     ! Free allocated memory
-    deallocate(coord, mass, distance)
+    deallocate(coord, mass, distance, acceleration)
 end program main
