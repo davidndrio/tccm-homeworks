@@ -38,7 +38,7 @@ subroutine molecular_dynamics(Natoms, coord, velocity, acceleration, mass, epsil
         temp_velocity = velocity + 0.5d0 * acceleration * dt
 
         ! 3. Compute new acceleration (a(n+1))
-        call compute_acc(Natoms, coord, mass, new_acceleration, epsilon, sigma)
+        call compute_acc(Natoms, coord, mass, distance, acceleration, epsilon, sigma) 
 
         ! 4. Compute final velocities (v(n+1) = v(n+**) + 0.5*a(n+1)*dt)
         velocity = temp_velocity + 0.5d0 * new_acceleration * dt
@@ -48,7 +48,6 @@ subroutine molecular_dynamics(Natoms, coord, velocity, acceleration, mass, epsil
 
         ! Compute energies
         call E(Natoms, velocity, mass, distance, epsilon, sigma)
-        write(*,*)"UNTIL HERE IT RAN", coord
         ! Write trajectory to file every M steps
         if (mod(step, M) == 0) then ! Ensures step is a multiple of M
             write(10, *) Natoms
