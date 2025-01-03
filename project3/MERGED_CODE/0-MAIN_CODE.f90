@@ -1,24 +1,24 @@
 program main
+    use angular_momentum_module  ! Incluye el módulo para corrección de momento angular
     implicit none
 
-    ! Declarations
+    ! Declaraciones
     integer :: Natoms
     double precision, allocatable :: coord(:,:), mass(:), distance(:,:), velocity(:,:), acceleration(:,:)
     double precision :: epsilon, sigma, total_potential_energy, kinetic_energy, total_energy
     character(len=100) :: input_file
-    integer :: i_stat, i
+    logical :: i_stat  ! Cambiado a logical
+    integer :: i, j
     integer :: read_Natoms
+    integer :: alloc_status
 
-    ! Interface for V function
+    ! Interfaces para funciones
     interface
         double precision function V(epsilon, sigma, Natoms, distance)
             integer, intent(in) :: Natoms
             double precision, intent(in) :: epsilon, sigma, distance(Natoms,Natoms)
         end function V
-    end interface
 
-    ! Interface for T function
-    interface
         double precision function T(Natoms, velocity, mass)
             integer, intent(in) :: Natoms
             double precision, intent(in) :: velocity(Natoms,3)
@@ -26,62 +26,78 @@ program main
         end function T
     end interface
 
-    ! Interface for E function
-    interface
-        double precision function E(Natoms, velocity, mass, distance, epsilon, sigma)
-            integer, intent(in) :: Natoms
-            double precision, intent(in) :: velocity(Natoms,3), mass(Natoms), distance(Natoms,Natoms)
-            double precision, intent(in) :: epsilon, sigma
-        end function E
-    end interface
-
-    ! Request the input file
+    ! Solicitar el archivo de entrada
     write(*,*) "Enter the input file name:"
     read(*,*) input_file
 
-    ! Call the function read_Natoms
+    ! Verificar si el archivo existe
+    inquire(file=input_file, exist=i_stat)
+    if (.not. i_stat) then
+        print *, "Error: Input file does not exist."
+        stop
+    end if
+
+    ! Leer número de átomos
     Natoms = read_Natoms(input_file)
+    if (Natoms <= 0) then
+        print *, "Error: Number of atoms must be positive."
+        stop
+    end if
     write(*,*) "Number of atoms:", Natoms
 
-    allocate(coord(Natoms, 3), mass(Natoms), distance(Natoms, Natoms), velocity(Natoms, 3), acceleration(Natoms, 3), stat=i_stat)
-    if (i_stat /= 0) then
+    ! Asignar memoria
+    allocate(coord(Natoms, 3), mass(Natoms), distance(Natoms, Natoms), &
+             velocity(Natoms, 3), acceleration(Natoms, 3), stat=alloc_status)
+    if (alloc_status /= 0) then
         print *, "Error: Memory allocation failed."
         stop
     end if
 
-    ! Read coordinates and masses 
+    ! Leer coordenadas y masas
     call read_molecule(input_file, Natoms, coord, mass)
 
-    ! Compute internuclear distances 
+    ! Calcular distancias internucleares
     call compute_distances(Natoms, coord, distance)
 
-    ! Compute potential energy
-    epsilon = 0.0661d0  ! J/mol, changed to double precision
-    sigma = 0.3345d0    ! nm, changed to double precision
+    ! Validar distancias demasiado pequeñas
+    do i = 1, Natoms - 1
+        do j = i + 1, Natoms
+            if (distance(i, j) < 1.0d-6) then
+                print *, "Error: Atoms too close. Distance between atoms", i, "and", j, "is", distance(i, j)
+                stop
+            end if
+        end do
+    end do
 
+    ! Calcular energía potencial
+    epsilon = 0.0661d0
+    sigma = 0.3345d0
     total_potential_energy = V(epsilon, sigma, Natoms, distance)
 
-    ! Initialize velocities (example: zero for now, but should be set appropriately)
-    velocity = 0.0d0  ! All velocities are set to zero for this example
+    ! Inicializar velocidades
+    velocity = 0.0d0
 
-    ! Compute kinetic energy
+    ! Calcular energía cinética
     kinetic_energy = T(Natoms, velocity, mass)
 
-    ! Compute total energy (sum of kinetic and potential)
-    total_energy = E(Natoms, velocity, mass, distance, epsilon, sigma)
+    ! Calcular energía total
+    total_energy = kinetic_energy + total_potential_energy
 
-    ! Compute acceleration for each atom
+    ! Calcular aceleraciones
     call compute_acc(Natoms, coord, mass, distance, acceleration, epsilon, sigma)
 
-    ! Print energies before simulation
+    ! Corregir momento angular
+    call correct_angular_momentum(Natoms, coord, velocity, mass)
+
+    ! Imprimir energías iniciales
     write(*,*) "Initial energies:"
     write(*,*) "KE=", kinetic_energy, ", PE=", total_potential_energy, ", TE=", total_energy
 
-    ! Run molecular dynamics simulation
+    ! Ejecutar simulación
     call molecular_dynamics(Natoms, coord, velocity, acceleration, mass, epsilon, sigma, distance)
 
-    write(*,*) "trajectories.xyz generated"
-
-    ! Free allocated memory
+    ! Finalizar
+    write(*,*) "Simulation completed. Output: trajectories.xyz"
     deallocate(coord, mass, distance, velocity, acceleration)
 end program main
+
