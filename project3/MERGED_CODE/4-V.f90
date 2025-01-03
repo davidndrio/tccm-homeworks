@@ -5,7 +5,7 @@ double precision function V(epsilon, sigma, Natoms, distance)
   double precision, intent(in) :: epsilon, sigma, distance(Natoms, Natoms)
   integer :: i, j
 
-  V = 0.0
+  V = 0.0d0
 
   do i = 1, Natoms-1
    do j = i+1, Natoms
