@@ -1,103 +1,69 @@
 program main
-    use angular_momentum_module  ! Incluye el módulo para corrección de momento angular
     implicit none
 
-    ! Declaraciones
-    integer :: Natoms
-    double precision, allocatable :: coord(:,:), mass(:), distance(:,:), velocity(:,:), acceleration(:,:)
-    double precision :: epsilon, sigma, total_potential_energy, kinetic_energy, total_energy
-    character(len=100) :: input_file
-    logical :: i_stat  ! Cambiado a logical
-    integer :: i, j
-    integer :: read_Natoms
-    integer :: alloc_status
+    ! Declare variables
+    integer :: Natoms  ! Number of atoms
+    double precision, allocatable :: coord(:,:), mass(:), distance(:,:), velocity(:,:), acceleration(:,:) 
+    double precision :: epsilon, sigma  ! Lennard-Jones potential parameters
+    character(len=100) :: input_file  ! Name of the input file
+    integer :: allocate_status  ! Status of memory allocation
 
-    ! Interfaces para funciones
+    ! Define interfaces for external functions and subroutines
     interface
-        double precision function V(epsilon, sigma, Natoms, distance)
-            integer, intent(in) :: Natoms
-            double precision, intent(in) :: epsilon, sigma, distance(Natoms,Natoms)
-        end function V
+        ! Function to read the number of atoms from the input file
+        function read_Natoms(input_file) result(Natoms)
+            integer :: Natoms  ! Number of atoms
+            character(len=*) :: input_file  ! Input file name
+        end function read_Natoms
 
-        double precision function T(Natoms, velocity, mass)
-            integer, intent(in) :: Natoms
-            double precision, intent(in) :: velocity(Natoms,3)
-            double precision, intent(in) :: mass(Natoms)
-        end function T
+        ! Subroutine to read molecular data (coordinates and masses) from the input file
+        subroutine read_molecule(input_file, Natoms, coord, mass)
+            character(len=*), intent(in) :: input_file  ! Input file name
+            integer, intent(in) :: Natoms  ! Number of atoms
+            double precision, intent(out) :: coord(Natoms, 3), mass(Natoms)  ! Atom coordinates and masses
+        end subroutine read_molecule
+
+        ! Subroutine to perform molecular dynamics simulation
+        subroutine molecular_dynamics(Natoms, coord, velocity, acceleration, mass, epsilon, sigma, distance)
+            integer, intent(in) :: Natoms  ! Number of atoms
+            double precision, intent(inout) :: coord(Natoms, 3), velocity(Natoms, 3), acceleration(Natoms, 3)
+            double precision, intent(in) :: mass(Natoms), epsilon, sigma  ! Masses and Lennard-Jones parameters
+            double precision, intent(inout) :: distance(Natoms, Natoms)  ! Pairwise distances between atoms
+        end subroutine molecular_dynamics
     end interface
 
-    ! Solicitar el archivo de entrada
+    ! Prompt the user to enter the input file name
     write(*,*) "Enter the input file name:"
     read(*,*) input_file
 
-    ! Verificar si el archivo existe
-    inquire(file=input_file, exist=i_stat)
-    if (.not. i_stat) then
-        print *, "Error: Input file does not exist."
-        stop
-    end if
-
-    ! Leer número de átomos
+    ! Call the function to read the number of atoms from the input file
     Natoms = read_Natoms(input_file)
-    if (Natoms <= 0) then
-        print *, "Error: Number of atoms must be positive."
-        stop
-    end if
-    write(*,*) "Number of atoms:", Natoms
 
-    ! Asignar memoria
-    allocate(coord(Natoms, 3), mass(Natoms), distance(Natoms, Natoms), &
-             velocity(Natoms, 3), acceleration(Natoms, 3), stat=alloc_status)
-    if (alloc_status /= 0) then
+    ! Allocate memory for arrays
+    allocate(coord(Natoms, 3), &
+             mass(Natoms), &
+             distance(Natoms, Natoms), &
+             velocity(Natoms, 3), &
+             acceleration(Natoms, 3), &
+             stat=allocate_status)
+
+    ! Check if memory allocation was successful
+    if (allocate_status /= 0) then
         print *, "Error: Memory allocation failed."
         stop
     end if
 
-    ! Leer coordenadas y masas
+    ! Call the subroutine to read molecular data (coordinates and masses)
     call read_molecule(input_file, Natoms, coord, mass)
 
-    ! Calcular distancias internucleares
-    call compute_distances(Natoms, coord, distance)
-
-    ! Validar distancias demasiado pequeñas
-    do i = 1, Natoms - 1
-        do j = i + 1, Natoms
-            if (distance(i, j) < 1.0d-6) then
-                print *, "Error: Atoms too close. Distance between atoms", i, "and", j, "is", distance(i, j)
-                stop
-            end if
-        end do
-    end do
-
-    ! Calcular energía potencial
+    ! Initialize Lennard-Jones parameters
     epsilon = 0.0661d0
     sigma = 0.3345d0
-    total_potential_energy = V(epsilon, sigma, Natoms, distance)
 
-    ! Inicializar velocidades
-    velocity = 0.0d0
-
-    ! Calcular energía cinética
-    kinetic_energy = T(Natoms, velocity, mass)
-
-    ! Calcular energía total
-    total_energy = kinetic_energy + total_potential_energy
-
-    ! Calcular aceleraciones
-    call compute_acc(Natoms, coord, mass, distance, acceleration, epsilon, sigma)
-
-    ! Corregir momento angular
-    call correct_angular_momentum(Natoms, coord, velocity, mass)
-
-    ! Imprimir energías iniciales
-    write(*,*) "Initial energies:"
-    write(*,*) "KE=", kinetic_energy, ", PE=", total_potential_energy, ", TE=", total_energy
-
-    ! Ejecutar simulación
+    ! Call the molecular dynamics simulation subroutine
     call molecular_dynamics(Natoms, coord, velocity, acceleration, mass, epsilon, sigma, distance)
 
-    ! Finalizar
-    write(*,*) "Simulation completed. Output: trajectories.xyz"
+    ! Deallocate memory to avoid memory leaks
     deallocate(coord, mass, distance, velocity, acceleration)
 end program main
 
