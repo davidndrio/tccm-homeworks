@@ -1,0 +1,32 @@
+# Molecular Dynamics Simulation with Lennard-Jones Potential
+
+This project implements a basic molecular dynamics simulation using the Lennard-Jones potential in Fortran90.
+It uses the velocity Verlet algorithm for the equations of motion over time.
+
+## Overview
+
+- Language: Fortran90
+- Purpose: To simulate the dynamics of a small systems, tracking positions, velocities, and energies over time.
+- Key Features:
+  - Implementation of the Lennard-Jones potential for interatomic interactions.
+  - Velocity Verlet algorithm for time integration.
+  - Calculation and monitoring of kinetic, potential, and total energy.
+
+### Directory Structure
+
+- 0-MAIN_CODE.f90: The main program, handles input/output, initialization, and simulation execution.
+- 1-read_Natoms.f90: Reads the number of atoms from the input file, which must be the number in the first line.
+- 2-read_molecule.f90: Reads coordinates and masses of atoms.
+- 3-compute_distances.f90: Calculates distances between atoms.
+- 4-V.f90: Computes potential energy using the Lennard-Jones potential.
+- 5-kinetic_energy.f90: Calculates kinetic energy based on velocities.
+- 6-total_energy.f90: Computes total energy (kinetic + potential).
+- 7-compute_acc.f90: Calculates acceleration based on forces.
+- 8-mass2symbol.f90: Converts atomic masses read on input to the corresponding chemical symbol.
+- 9-molecular_dynamics.f90: Contains the main simulation loop.
+- (Input file with the name you want). The input file must have the following format:
+
+	- The first line indicates the number of atoms (Natoms).
+	- Each subsequent line lists its x, y, z coordinates in nm, followed by the mass of the corresponding atom in grams per mole.
+	
+SHOULD WE MENTION HERE THE FORMAT OF THE OUTPUTS?#####################

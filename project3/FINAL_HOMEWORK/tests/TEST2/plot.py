@@ -12,23 +12,28 @@ def read_trajectory(filename):
     with open(filename, 'r') as file:
         lines = file.readlines()
         for line in lines:
-            if line.startswith("Step:"):
-                # Extract step information
-                step_part = line.split(",")[0]
-                step = int(step_part.split(":")[1].strip())
+            # Check if the line contains the expected "Energies (in J/mol)" part
+            if "Energies (in J/mol)" in line:
+                try:
+                    # Extract energy values
+                    energy_part = line.split("Energies (in J/mol):")[1].strip()
+                    energy_values = energy_part.split(", ")
+                    ke = float(energy_values[0].split("=")[1].strip())
+                    pe = float(energy_values[1].split("=")[1].strip())
+                    te = float(energy_values[2].split("=")[1].strip())
 
-                # Extract energy values
-                energy_part = line.split("Energy (J/mol):")[1].strip()
-                energy_values = energy_part.split(", ")
-                ke = float(energy_values[0].split(":")[1].strip())
-                pe = float(energy_values[1].split(":")[1].strip())
-                te = float(energy_values[2].split(":")[1].strip())
+                    # Extract step information (from the same line)
+                    step_part = line.split("Step=")[1].split(",")[0].strip()
+                    step = int(step_part)
 
-                # Append to respective lists
-                steps.append(step)
-                KE.append(ke)
-                PE.append(pe)
-                TE.append(te)
+                    # Append to respective lists
+                    steps.append(step)
+                    KE.append(ke)
+                    PE.append(pe)
+                    TE.append(te)
+
+                except IndexError:
+                    print(f"Skipping line due to incorrect format: {line}")
 
     # Convert lists to numpy arrays for consistency
     return np.array(steps), np.array(KE), np.array(PE), np.array(TE)

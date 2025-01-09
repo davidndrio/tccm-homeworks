@@ -1,0 +1,31 @@
+# 1. Ensure that all .f90 files and the input file you want to run are in the same folder. The files are:
+
+	- 0-MAIN_CODE.f90: The main program, handles input/output, initialization, and simulation execution.
+	- 1-read_Natoms.f90: Reads the number of atoms from the input file.
+	- 2-read_molecule.f90: Reads coordinates and masses of atoms.
+	- 3-compute_distances.f90: Calculates distances between atoms.
+	- 4-V.f90: Computes potential energy using the Lennard-Jones potential.
+	- 5-kinetic_energy.f90: Calculates kinetic energy based on velocities.
+	- 6-total_energy.f90: Computes total energy (kinetic + potential).
+	- 7-compute_acc.f90: Calculates acceleration based on forces.
+        - 8-mass2symbol.f90: Converts atomic masses read on input to the corresponding chemical symbol. 
+	- 9-molecular_dynamics.f90: Contains the main simulation loop.
+	- (Input file with the name you want)
+
+# 2. Compile the code with the following statement, in one line (the name of the program is up to you, that's why it is in parentheses):
+
+	gfortran -o (md_simulation) 0-MAIN_CODE.f90 1-read_Natoms.f90 2-read_molecule.f90 3-compute_distances.f90 4-V.f90 5-kinetic_energy.f90 6-total_energy.f90 7-compute_acc.f90 8-mass2symbol.f90 9-molecular_dynamics.f90	
+
+# 3. Run the code with the name you chose for your program file:
+
+	./(md_simulation)
+
+# 4. The prompt will ask you to enter the name of your input file. Do it, including the extension if it has one.
+
+# 5. You will get a file called trajectories.xyz. The trajectories.xyz file contains trajectory data recorded at every 10 steps. 
+# The structure of the file is as follows:
+
+	## First Line of Each Iteration: Indicates the total number of atoms.
+	## Second Line of Each Iteration: Contains the total energy, kinetic energy, and potential energy, all expressed in J/mol, 
+	 # the step number and the total time in fs.
+	## Subsequent Lines: Lists the atomic species and their respective coordinates (in nanometers).

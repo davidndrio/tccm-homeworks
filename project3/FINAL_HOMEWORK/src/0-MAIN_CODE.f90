@@ -1,87 +1,66 @@
 program main
     implicit none
 
-    ! Declarations
     integer :: Natoms
     double precision, allocatable :: coord(:,:), mass(:), distance(:,:), velocity(:,:), acceleration(:,:)
-    double precision :: epsilon, sigma, total_potential_energy, kinetic_energy, total_energy
+    character(len=2), allocatable :: atom_symbols(:)
     character(len=100) :: input_file
-    integer :: i_stat, i
-    integer :: read_Natoms
+    integer :: allocate_status
 
-    ! Interface for V function
     interface
-        double precision function V(epsilon, sigma, Natoms, distance)
+        function read_Natoms(input_file) result(Natoms)
+            integer :: Natoms
+            character(len=*) :: input_file
+        end function read_Natoms
+
+        subroutine read_molecule(input_file, Natoms, coord, mass)
+            character(len=*), intent(in) :: input_file
             integer, intent(in) :: Natoms
-            double precision, intent(in) :: epsilon, sigma, distance(Natoms,Natoms)
-        end function V
+            double precision, intent(out) :: coord(Natoms, 3), mass(Natoms)
+        end subroutine read_molecule
+
+        subroutine molecular_dynamics(Natoms, coord, velocity, acceleration, mass, epsilon, sigma, distance)
+            integer, intent(in) :: Natoms
+            double precision, intent(inout) :: coord(Natoms, 3), velocity(Natoms, 3), acceleration(Natoms, 3)
+            double precision, intent(inout) :: distance(Natoms, Natoms)
+            double precision, intent(in) :: mass(Natoms), epsilon, sigma
+        end subroutine molecular_dynamics
     end interface
 
-    ! Interface for T function
-    interface
-        double precision function T(Natoms, velocity, mass)
-            integer, intent(in) :: Natoms
-            double precision, intent(in) :: velocity(Natoms,3)
-            double precision, intent(in) :: mass(Natoms)
-        end function T
-    end interface
-
-    ! Interface for E function
-    interface
-        double precision function E(Natoms, velocity, mass, distance, epsilon, sigma)
-            integer, intent(in) :: Natoms
-            double precision, intent(in) :: velocity(Natoms,3), mass(Natoms), distance(Natoms,Natoms)
-            double precision, intent(in) :: epsilon, sigma
-        end function E
-    end interface
-
-    ! Request the input file
     write(*,*) "Enter the input file name:"
-    read(*,*) input_file
+    read(*,*) input_file  ! Input file name
 
-    ! Call the function read_Natoms
+    ! Reads the number of atoms
     Natoms = read_Natoms(input_file)
-    write(*,*) "Number of atoms:", Natoms
+    if (Natoms <= 0) then
+        print *, "Error: Invalid number of atoms."
+        stop
+    end if
 
-    allocate(coord(Natoms, 3), mass(Natoms), distance(Natoms, Natoms), velocity(Natoms, 3), acceleration(Natoms, 3), stat=i_stat)
-    if (i_stat /= 0) then
+    ! To allocate the arrays
+    allocate(coord(Natoms, 3), &
+             mass(Natoms), & 
+             distance(Natoms, Natoms), & 
+             velocity(Natoms, 3), & 
+             acceleration(Natoms, 3), & 
+             atom_symbols(Natoms), & 
+             stat=allocate_status)
+
+    if (allocate_status /= 0) then
         print *, "Error: Memory allocation failed."
         stop
     end if
 
-    ! Read coordinates and masses 
+
+    ! Reads molecular data
     call read_molecule(input_file, Natoms, coord, mass)
 
-    ! Compute internuclear distances 
-    call compute_distances(Natoms, coord, distance)
+    ! Executes molecular dynamics
+    call molecular_dynamics(Natoms, coord, velocity, acceleration, mass, 0.0661d0, 0.3345d0, distance)
 
-    ! Compute potential energy
-    epsilon = 0.0661d0  ! J/mol, changed to double precision
-    sigma = 0.3345d0    ! nm, changed to double precision
-
-    total_potential_energy = V(epsilon, sigma, Natoms, distance)
-
-    ! Initialize velocities (example: zero for now, but should be set appropriately)
-    velocity = 0.0d0  ! All velocities are set to zero for this example
-
-    ! Compute kinetic energy
-    kinetic_energy = T(Natoms, velocity, mass)
-
-    ! Compute total energy (sum of kinetic and potential)
-    total_energy = E(Natoms, velocity, mass, distance, epsilon, sigma)
-
-    ! Compute acceleration for each atom
-    call compute_acc(Natoms, coord, mass, distance, acceleration, epsilon, sigma)
-
-    ! Print energies before simulation
-    write(*,*) "Initial energies:"
-    write(*,*) "KE=", kinetic_energy, ", PE=", total_potential_energy, ", TE=", total_energy
-
-    ! Run molecular dynamics simulation
-    call molecular_dynamics(Natoms, coord, velocity, acceleration, mass, epsilon, sigma, distance)
-
-    write(*,*) "trajectories.xyz generated"
-
-    ! Free allocated memory
-    deallocate(coord, mass, distance, velocity, acceleration)
+    ! Frees the memory
+    deallocate(coord, mass, distance, velocity, acceleration, atom_symbols)
+    
+    write(*,*) "MD simulation succesfully finished!"
 end program main
+
