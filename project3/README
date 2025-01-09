@@ -1,8 +1,7 @@
 # Molecular Dynamics Simulation with Lennard-Jones Potential
 
-This project implements a basic molecular dynamics simulation using the Lennard-Jones potential in Fortran90.It uses the velocity Verlet algorithm 
-fori the equations of motion over time.
-
+This project implements a basic molecular dynamics simulation using the Lennard-Jones potential in Fortran90.
+It uses the velocity Verlet algorithm for the equations of motion over time.
 
 ## Overview
 
@@ -24,8 +23,9 @@ fori the equations of motion over time.
 - 6-total_energy.f90: Computes total energy (kinetic + potential).
 - 7-compute_acc.f90: Calculates acceleration based on forces.
 - 8-molecular_dynamics.f90: Contains the main simulation loop.
-- (Input file with the name you want): The input file should contain:
+- (Input file with the name you want). The input file must have the following format:
 
 	- The first line indicates the number of atoms (Natoms).
-	- Each subsequent line lists the x, y, z coordinates followed by the mass in grams per mole for each atom:
-
+	- Each subsequent line lists the chemical symbol of the element (for example, Ar for argon), 
+	  followed by its x, y, z coordinates in nm and the mass of the corresponding atom in grams per mole.
+	
