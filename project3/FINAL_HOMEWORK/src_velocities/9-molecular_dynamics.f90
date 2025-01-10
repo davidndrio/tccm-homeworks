@@ -54,9 +54,9 @@ subroutine molecular_dynamics(Natoms, coord, velocity, acceleration, mass, epsil
     
     ! Initialize velocities to zero
     do atom = 1, Natoms
-        velocity(atom, 1) = 0.0d0
-        velocity(atom, 2) = 0.0d0
-        velocity(atom, 3) = 0.0d0
+        velocity(atom, 1) = 0.05d0
+        velocity(atom, 2) = 0.05d0
+        velocity(atom, 3) = 0.05d0
     end do
 
 

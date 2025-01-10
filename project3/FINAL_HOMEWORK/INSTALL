@@ -1,4 +1,6 @@
-# 1. Ensure that all .f90 files and the input file you want to run are in the same folder. The files are:
+# FOLLOW THE STEPS DETAILED BELOW IN CASE YOU WANT TO RUN MD SIMULATIONS WITH THIS CODE.
+
+# 1. Ensure that all .f90 files are in the same folder. In our case, these files are located in the /scr folder. The files are:
 
 	- 0-MAIN_CODE.f90: The main program, handles input/output, initialization, and simulation execution.
 	- 1-read_Natoms.f90: Reads the number of atoms from the input file.
@@ -10,22 +12,29 @@
 	- 7-compute_acc.f90: Calculates acceleration based on forces.
         - 8-mass2symbol.f90: Converts atomic masses read on input to the corresponding chemical symbol. 
 	- 9-molecular_dynamics.f90: Contains the main simulation loop.
-	- (Input file with the name you want)
 
-# 2. Compile the code with the following statement, in one line (the name of the program is up to you, that's why it is in parentheses):
+# 2.1 Compile the code with the following statement, in one line (the name of the program is up to you, that's why it is in parentheses, when writting on the terminal
+# DO NOT write the paarenthesis):
 
-	gfortran -o (md_simulation) 0-MAIN_CODE.f90 1-read_Natoms.f90 2-read_molecule.f90 3-compute_distances.f90 4-V.f90 5-kinetic_energy.f90 6-total_energy.f90 7-compute_acc.f90 8-mass2symbol.f90 9-molecular_dynamics.f90	
+	gfortran -o (MD.x) 0-MAIN_CODE.f90 1-read_Natoms.f90 2-read_molecule.f90 3-compute_distances.f90 4-V.f90 5-kinetic_energy.f90 
+	6-total_energy.f90 7-compute_acc.f90 8-mass2symbol.f90 9-molecular_dynamics.f90	
 
-# 3. Run the code with the name you chose for your program file:
+# 2.2. Alternatively, you can use the following comand inside the /src folder:
+
+	gfortran -o (MD.x) *.f90
+
+# 3. Copy the program you generated inside a folder where you have some input file:
 
 	./(md_simulation)
 
-# 4. The prompt will ask you to enter the name of your input file. Do it, including the extension if it has one.
+# 4. Run the code in the folder you chose by writting this in the terminal:
 
-# 5. You will get a file called trajectories.xyz. The trajectories.xyz file contains trajectory data recorded at every 10 steps. 
-# The structure of the file is as follows:
+	./(MD.x)
 
-	## First Line of Each Iteration: Indicates the total number of atoms.
-	## Second Line of Each Iteration: Contains the total energy, kinetic energy, and potential energy, all expressed in J/mol, 
-	 # the step number and the total time in fs.
-	## Subsequent Lines: Lists the atomic species and their respective coordinates (in nanometers).
+
+# 4. The prompt will ask you to enter the name of your input file. Do it, including the extension if it has one (for example: test1.inp).
+
+# 5. You will get a file called trajectories.xyz. The trajectories.xyz file contains trajectory data recorded at every 10 steps. The simulation uses a tstep of 0.2 fs,
+# so the total time of simulation is 200 fs. You can change it if you modify the source code and recompile the program.
+ 
+# 6. Now you can read trajectories.xyz using, for example, vi. For more information about the output format, read the README file.
