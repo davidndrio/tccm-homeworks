@@ -25,16 +25,15 @@
 
 # 3. Copy the program you generated inside a folder where you have some input file:
 
-	./(md_simulation)
+	cp (surce path of your MD code) (destination path of the MD code where you have some input file)
 
-# 4. Run the code in the folder you chose by writting this in the terminal:
+# 4. Run the code in the folder you chose by writting this in the terminal (replace MD.x by the name of your program):
 
 	./(MD.x)
 
+# 5. The prompt will ask you to enter the name of your input file. Do it, including the extension if it has one (for example: test1.inp).
 
-# 4. The prompt will ask you to enter the name of your input file. Do it, including the extension if it has one (for example: test1.inp).
-
-# 5. You will get a file called trajectories.xyz. The trajectories.xyz file contains trajectory data recorded at every 10 steps. The simulation uses a tstep of 0.2 fs,
+# 6. You will get a file called trajectories.xyz. The trajectories.xyz file contains trajectory data recorded at every 10 steps. The simulation uses a tstep of 0.2 fs,
 # so the total time of simulation is 200 fs. You can change it if you modify the source code and recompile the program.
  
-# 6. Now you can read trajectories.xyz using, for example, vi. For more information about the output format, read the README file.
+# 7. Now you can read trajectories.xyz using, for example, vi. For more information about the output format, read the README file.
